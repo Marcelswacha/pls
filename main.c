@@ -1,22 +1,22 @@
 #include <stdio.h>
 #include <dirent.h>
+#include <stdlib.h>
 
 int listdir(const char* path)
 {
-	struct dirent *entry = NULL;
-	DIR *dp = NULL;
-	
-	dp = opendir(path);
-	if (dp == NULL) {
-		perror(path);
-		return -1;
-	}
-	
-	while ((entry = readdir(dp)))
-		puts(entry->d_name);
-	
-	closedir(dp);
-	return 0;
+    struct dirent **namelist;
+    int i, n;
+
+    n = scandir(path, &namelist, 0, alphasort);
+    if (n < 0)
+        perror("scandir");
+    else {
+        for (i = 0; i < n; ++i) {
+            printf("%s\n", namelist[i]->d_name);
+            free(namelist[i]);
+        }
+    }
+    free(namelist);
 }
 
 int main(int argc, char** argv)
