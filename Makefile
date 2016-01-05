@@ -6,5 +6,8 @@ pls: main.o
 main.o: main.c
 	gcc $(CFLAGS) -c main.c
 
+all:
+	gcc $(CFLAGS) -o pls main.o
+
 clean:
 	rm -f *.o pls
