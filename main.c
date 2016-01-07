@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 
+#include "colors.h"
 #include "concat.h"
 
 static int no_dot = 1;
@@ -19,7 +20,7 @@ void decorate(const char* parent, const char* child)
     if (S_ISREG(buf.st_mode))
         printf("\t%-40s%lld\n", child, (long long)buf.st_size);
     else
-        printf("\t%-40s\n", child);
+        printf(ANSI_COLOR_CYAN "\t%-40s\n" ANSI_COLOR_RESET, child);
 
     free(absolute_path);
 }
