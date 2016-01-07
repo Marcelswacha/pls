@@ -9,15 +9,18 @@
 #define NO_DOT 1
 static int no_dot = 0;
 
-void decorate(const char* path)
+void decorate(const char* parent, const char* child)
 {
+    /* get absolute path */
+    char* absolute_path = concat(parent, "/", child, NULL);
+
     struct stat buf;
 
-    stat(path, &buf);
+    stat(absolute_path, &buf);
     if (S_ISREG(buf.st_mode))
-        printf("%-80s%lld\n", path, (long long)buf.st_size);
+        printf("\t%-80s%lld\n", child, (long long)buf.st_size);
     else
-        printf("%s\n", path);
+        printf("\t%-80s\n", child);
 }
 
 int no_dot_filter(const struct dirent* entry)
@@ -35,7 +38,7 @@ int filter_collection(const struct dirent* entry)
     return result;
 }
 
-int listdir(const char* path, void (*decorator)(const char* path))
+int listdir(const char* path)
 {
     struct dirent **namelist;
     int i, n;
@@ -51,23 +54,17 @@ int listdir(const char* path, void (*decorator)(const char* path))
     }
     else {
         for (i = 0; i < n; ++i) {
-            /* get absolute path */
-            char* absolute_path = concat(resolved_path, "/",
-                                         namelist[i]->d_name, NULL);
-
             /* print info */
-            (*decorator)(absolute_path);
+            decorate(resolved_path, namelist[i]->d_name);
 
             /* clean up */
             free(namelist[i]);
-            free(absolute_path);
         }
     }
 
     free(namelist);
     return 0;
 }
-
 
 static struct option long_options[] = {
     {"no-dot", 0, NULL, NO_DOT},
@@ -80,25 +77,23 @@ int main(int argc, char** argv)
     int i;
 
     if (argc == 1)
-        listdir(".", decorate);
+        listdir(".");
 
-	do {
-        next_option = getopt_long(argc, argv,
-                                  "", long_options, NULL);
-        switch (next_option)
-        {
-	        case NO_DOT:
-	            no_dot = 1;
-	            break;
-	        case -1:
-	            break;
-	        default:
-	            abort();
-		}
-	} while (next_option != -1);
+    do {
+        next_option = getopt_long(argc, argv, "", long_options, NULL);
+        switch (next_option) {
+        case NO_DOT:
+            no_dot = 1;
+            break;
+        case -1:
+            break;
+        default:
+            abort();
+        }
+    } while (next_option != -1);
 
-	for (i = optind; i < argc; ++i)
-		listdir(argv[i], decorate);
+    for (i = optind; i < argc; ++i)
+        listdir(argv[i]);
 
-	return 0;
+    return 0;
 }
