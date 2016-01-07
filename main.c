@@ -17,9 +17,9 @@ void decorate(const char* parent, const char* child)
 
     stat(absolute_path, &buf);
     if (S_ISREG(buf.st_mode))
-        printf("\t%-80s%lld\n", child, (long long)buf.st_size);
+        printf("\t%-40s%lld\n", child, (long long)buf.st_size);
     else
-        printf("\t%-80s\n", child);
+        printf("\t%-40s\n", child);
 
     free(absolute_path);
 }
