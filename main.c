@@ -22,6 +22,7 @@ int is_dot(const char* path)
     if (strcmp(name, ".") == 0 || strcmp(name, "..") == 0)
         result = 1;
 
+    free (copy);
     return result;
 }
 
