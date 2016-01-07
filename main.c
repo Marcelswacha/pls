@@ -6,8 +6,8 @@
 
 #include "concat.h"
 
-#define NO_DOT 1
-static int no_dot = 0;
+#define DOT 1
+static int no_dot = 1;
 
 void decorate(const char* parent, const char* child)
 {
@@ -67,7 +67,7 @@ int listdir(const char* path)
 }
 
 static struct option long_options[] = {
-    {"no-dot", 0, NULL, NO_DOT},
+    {"dot", 0, NULL, DOT},
     {NULL, 0, NULL, 0}
 };
 
@@ -76,14 +76,11 @@ int main(int argc, char** argv)
     int next_option;
     int i;
 
-    if (argc == 1)
-        listdir(".");
-
     do {
         next_option = getopt_long(argc, argv, "", long_options, NULL);
         switch (next_option) {
-        case NO_DOT:
-            no_dot = 1;
+        case DOT:
+            no_dot = 0;
             break;
         case -1:
             break;
@@ -92,8 +89,11 @@ int main(int argc, char** argv)
         }
     } while (next_option != -1);
 
-    for (i = optind; i < argc; ++i)
-        listdir(argv[i]);
+    if (optind == argc)
+        listdir(".");
+    else
+        for (i = optind; i < argc; ++i)
+            listdir(argv[i]);
 
     return 0;
 }
