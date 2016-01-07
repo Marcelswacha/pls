@@ -2,12 +2,63 @@
 #include <getopt.h>
 #include <dirent.h>
 #include <stdlib.h>
+#include <libgen.h>
 #include <sys/stat.h>
 
 #include "colors.h"
 #include "concat.h"
 
 static int no_dot = 1;
+
+int is_dot(const char* path)
+{
+    int result = 0;
+    char* copy;
+    char* name;
+    copy = strdup(path);
+
+    name = basename(copy);
+    if (strcmp(name, ".") == 0 || strcmp(name, "..") == 0)
+        result = 1;
+
+    return result;
+}
+
+/* FIXME: Need for own arithmetics */
+unsigned long long get_size(const char* path)
+{
+    struct stat buf;
+    struct dirent **namelist;
+    unsigned long long size = 0u;
+    char* absolute_path;
+    int i, n;
+
+    lstat(path, &buf);
+    size += (unsigned long long )buf.st_size;
+    if ((S_ISDIR(buf.st_mode)) && (is_dot(path) == 0)) {
+        /* enter directory and get size of each node */
+        n = scandir(path, &namelist, 0, 0);
+        if (n < 0) {
+            perror("scandir");
+            printf(ANSI_COLOR_RED "%s" ANSI_COLOR_RESET"\n", path);
+        } else {
+            for (i = 0; i < n; ++i) {
+                /* get absolute path */
+                absolute_path = concat(path, "/", namelist[i]->d_name, NULL);
+
+                /* count the size */
+                size += get_size(absolute_path);
+
+                /* clean up */
+                free(namelist[i]);
+                free(absolute_path);
+            }
+            free(namelist);
+        }
+    }
+
+    return size;
+}
 
 void decorate(const char* parent, const char* child)
 {
@@ -16,11 +67,14 @@ void decorate(const char* parent, const char* child)
 
     struct stat buf;
 
-    stat(absolute_path, &buf);
-    if (S_ISREG(buf.st_mode))
-        printf("\t%-40s%lld\n", child, (long long)buf.st_size);
+    lstat(absolute_path, &buf);
+    off_t size = get_size(absolute_path);
+
+    if (S_ISDIR(buf.st_mode))
+        printf(ANSI_COLOR_CYAN "\t%-40s%llu" ANSI_COLOR_RESET"\n",
+                        child, (unsigned long long)size);
     else
-        printf(ANSI_COLOR_CYAN "\t%-40s\n" ANSI_COLOR_RESET, child);
+        printf("\t%-40s%llu\n", child, (unsigned long long)size);
 
     free(absolute_path);
 }
