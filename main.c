@@ -20,6 +20,8 @@ void decorate(const char* parent, const char* child)
         printf("\t%-80s%lld\n", child, (long long)buf.st_size);
     else
         printf("\t%-80s\n", child);
+
+    free(absolute_path);
 }
 
 int no_dot_filter(const struct dirent* entry)
