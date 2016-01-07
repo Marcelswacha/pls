@@ -1,8 +1,9 @@
 #include <stdio.h>
-#include <getopt.h>
 #include <dirent.h>
-#include <stdlib.h>
+#include <getopt.h>
 #include <libgen.h>
+#include <stdlib.h>
+#include <stdint.h>
 #include <sys/stat.h>
 
 #include "colors.h"
@@ -24,12 +25,11 @@ int is_dot(const char* path)
     return result;
 }
 
-/* FIXME: Need for own arithmetics */
-unsigned long long get_size(const char* path)
+uint64_t get_size(const char* path)
 {
     struct stat buf;
     struct dirent **namelist;
-    unsigned long long size = 0u;
+    uint64_t size = 0u;
     char* absolute_path;
     int i, n;
 
@@ -68,13 +68,13 @@ void decorate(const char* parent, const char* child)
     struct stat buf;
 
     lstat(absolute_path, &buf);
-    off_t size = get_size(absolute_path);
+    uint64_t size = get_size(absolute_path);
 
     if (S_ISDIR(buf.st_mode))
         printf(ANSI_COLOR_CYAN "\t%-40s%llu" ANSI_COLOR_RESET"\n",
-                        child, (unsigned long long)size);
+                        child, size);
     else
-        printf("\t%-40s%llu\n", child, (unsigned long long)size);
+        printf("\t%-40s%llu\n", child, size);
 
     free(absolute_path);
 }
