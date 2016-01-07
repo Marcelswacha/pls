@@ -9,7 +9,7 @@
 #include "colors.h"
 #include "concat.h"
 
-static int no_dot = 1;
+static int no_dot = 0;
 
 int is_dot(const char* path)
 {
@@ -124,7 +124,7 @@ int listdir(const char* path)
 }
 
 static struct option long_options[] = {
-    {"dot", 0, NULL, 'd'},
+    {"no-dot", 0, NULL, 'd'},
     {NULL, 0, NULL, 0}
 };
 
@@ -137,7 +137,7 @@ int main(int argc, char** argv)
         next_option = getopt_long(argc, argv, "d", long_options, NULL);
         switch (next_option) {
         case 'd':
-            no_dot = 0;
+            no_dot = 1;
             break;
         case -1:
             break;
