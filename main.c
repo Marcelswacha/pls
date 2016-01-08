@@ -10,7 +10,10 @@ int listdir(const char* path)
 
     struct node* head = node_create(resolved_path, 0);
     build_tree(head);
-    traverse_tree(head);
+    if (head->type == DIRECTORY) {
+        traverse_tree(head);
+    } else
+        node_print(head);
 
     return 0;
 }
