@@ -1,4 +1,4 @@
-CFLAGS = -g
+CFLAGS = -g -Wall
 
 SRC = main.c node.c concat.c
 

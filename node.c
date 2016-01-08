@@ -103,7 +103,6 @@ void traverse_tree(struct node* head)
 {
     /* BFS traversal */
     /* Traversing for dirs only */
-    struct node* n;
     int i;
 
     /* print head */
