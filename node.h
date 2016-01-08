@@ -5,10 +5,7 @@
 
 enum file_type
 {
-    DIRECTORY,
-    REGULAR_FILE,
-    SYMLINK,
-    SOMETHING_ELSE
+    DIRECTORY, REGULAR_FILE, SYMLINK, SOMETHING_ELSE
 };
 
 struct node

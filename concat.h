@@ -6,7 +6,7 @@
 #include <stdarg.h>
 #include <string.h>
 
-char* concat (const char *str, ...);
+char* concat(const char *str, ...);
 int is_dot(const char* path);
 
 #endif /* CONCAT_H_ */

@@ -19,10 +19,8 @@ int listdir(const char* path)
 }
 
 static int no_dot = 0;
-static struct option long_options[] = {
-    {"no-dot", 0, NULL, 'd'},
-    {NULL, 0, NULL, 0}
-};
+static struct option long_options[] = { { "no-dot", 0, NULL, 'd' }, { NULL, 0,
+        NULL, 0 } };
 
 int main(int argc, char** argv)
 {

@@ -26,7 +26,8 @@ struct node* node_create(const char* path, unsigned depth)
 void node_free(struct node* n)
 {
     free(n->path);
-    if (n->children) free(n->children);
+    if (n->children)
+        free(n->children);
     free(n);
 }
 
@@ -34,15 +35,15 @@ void node_print(struct node* n)
 {
     char* copy;
     copy = strdup(n->path);
-    switch(n->type){
-        case DIRECTORY:
-            printf(ANSI_COLOR_CYAN "\t%-40s%llu" ANSI_COLOR_RESET"\n",
-                                    basename(copy), n->size);
-            break;
-        default:
-            printf("\t%-40s%llu\n", basename(copy), n->size);
-            break;
-        }
+    switch (n->type) {
+    case DIRECTORY:
+        printf(ANSI_COLOR_CYAN "\t%-40s%llu" ANSI_COLOR_RESET"\n",
+        basename(copy), n->size);
+        break;
+    default:
+        printf("\t%-40s%llu\n", basename(copy), n->size);
+        break;
+    }
     free(copy);
 }
 
@@ -61,10 +62,14 @@ void build_tree(struct node* head)
     lstat(head->path, &buf);
 
     uint64_t size = buf.st_size;
-    if (S_ISDIR(buf.st_mode)) head->type = DIRECTORY;
-    else if (S_ISREG(buf.st_mode)) head->type = REGULAR_FILE;
-    else if (S_ISLNK(buf.st_mode)) head->type = SYMLINK;
-    else head->type = SOMETHING_ELSE;
+    if (S_ISDIR(buf.st_mode))
+        head->type = DIRECTORY;
+    else if (S_ISREG(buf.st_mode))
+        head->type = REGULAR_FILE;
+    else if (S_ISLNK(buf.st_mode))
+        head->type = SYMLINK;
+    else
+        head->type = SOMETHING_ELSE;
 
     /* if it is the proper directory, build trees on its children */
     if (node_is_proper_dir(head)) {
@@ -79,9 +84,11 @@ void build_tree(struct node* head)
             if (head->children) {
                 for (i = 0; i < n; ++i) {
                     /* fill children names */
-                    char * child_path = concat(head->path, "/", namelist[i]->d_name,
-                                                NULL);
-                    head->children[i] = node_create(child_path, head->depth + 1);
+                    char * child_path = concat(head->path, "/",
+                            namelist[i]->d_name,
+                            NULL);
+                    head->children[i] = node_create(child_path,
+                            head->depth + 1);
 
                     /* span tree recursively  - DFS*/
                     build_tree(head->children[i]);
@@ -106,8 +113,8 @@ void traverse_tree(struct node* head)
     int i;
 
     /* print head */
-    printf(ANSI_COLOR_BLUE "%s: %llu" ANSI_COLOR_RESET"\n",
-                            head->path, head->size);
+    printf(ANSI_COLOR_BLUE "%s: %llu" ANSI_COLOR_RESET"\n", head->path,
+            head->size);
 
     /* print childrens */
     for (i = 0; head->children[i] != NULL; ++i)
