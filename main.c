@@ -6,10 +6,9 @@
 #include <stdint.h>
 #include <sys/stat.h>
 
+#include "node.h"
 #include "colors.h"
 #include "concat.h"
-
-#include "node.h"
 
 static int no_dot = 0;
 
@@ -84,29 +83,13 @@ int filter_collection(const struct dirent* entry)
 
 int listdir(const char* path)
 {
-    struct dirent **namelist;
-    int i, n;
     char resolved_path[1024];
-
     realpath(path, resolved_path);
-    printf("%s:\n", resolved_path);
 
-    n = scandir(resolved_path, &namelist, filter_collection, alphasort);
-    if (n < 0) {
-        perror("scandir");
-        return -1;
-    }
-    else {
-        for (i = 0; i < n; ++i) {
-            /* print info */
-            decorate(resolved_path, namelist[i]->d_name);
+    struct node* head = node_create(resolved_path, 0);
+    build_tree(head);
+    traverse_tree(head);
 
-            /* clean up */
-            free(namelist[i]);
-        }
-    }
-
-    free(namelist);
     return 0;
 }
 

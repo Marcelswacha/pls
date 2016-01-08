@@ -1,13 +1,11 @@
 CFLAGS = -g
 
-pls: main.o
-	gcc $(CFLAGS) -o pls main.o
+SRC = main.c node.c concat.c
 
-main.o: main.c
-	gcc $(CFLAGS) -c main.c node.c
+OBJ = $(SRC:.c=.o)
 
-all:
-	gcc $(CFLAGS) -o pls main.o
+all: $(OBJ)
+	gcc $(CFLAGS) $(SRC) -o pls
 
 clean:
 	rm -f *.o pls

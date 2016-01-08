@@ -31,15 +31,23 @@ void node_free(struct node* n)
 
 void node_print(struct node* n)
 {
+    char* copy;
+    copy = strdup(n->path);
     switch(n->type){
         case DIRECTORY:
             printf(ANSI_COLOR_CYAN "\t%-40s%llu" ANSI_COLOR_RESET"\n",
-                                    basename(n->path), n->size);
+                                    basename(copy), n->size);
             break;
         default:
-            printf("\t%-40s%llu\n", basename(n->path), n->size);
+            printf("\t%-40s%llu\n", basename(copy), n->size);
             break;
         }
+    free(copy);
+}
+
+int node_is_proper_dir(struct node* n)
+{
+    return (n->type == DIRECTORY && is_dot(n->path) == 0) ? 1 : 0;
 }
 
 void build_tree(struct node* head)
@@ -58,7 +66,7 @@ void build_tree(struct node* head)
     else head->type = SOMETHING_ELSE;
 
     /* if it is the proper directory, build trees on its children */
-    if (S_ISDIR(buf.st_mode) && !is_dot(head->path)) {
+    if (node_is_proper_dir(head)) {
         /* scan directory */
         n = scandir(head->path, &namelist, 0, alphasort);
         if (n < 0)
@@ -70,7 +78,7 @@ void build_tree(struct node* head)
             if (head->children) {
                 for (i = 0; i < n; ++i) {
                     /* fill children names */
-                    char * child_path = concat(head->path, "/", namelist[i],
+                    char * child_path = concat(head->path, "/", namelist[i]->d_name,
                                                 NULL);
                     head->children[i] = node_create(child_path, head->depth + 1);
 
@@ -93,24 +101,20 @@ void build_tree(struct node* head)
 void traverse_tree(struct node* head)
 {
     /* BFS traversal */
+    /* Traversing for dirs only */
     struct node* n;
     int i;
-    switch(head->type){
-    case DIRECTORY:
-        /* print head */
-        printf(ANSI_COLOR_CYAN "\t%-40s%llu" ANSI_COLOR_RESET"\n",
-                                head->path, head->size);
 
-        /* print childrens */
-        for (i = 0; head->children[i] != NULL; ++i) {
-            node_print(head->children[i]);
-        }
-        break;
-    default:
-        /* it was previously printed */
-        break;
-    }
-    if (head->type == DIRECTORY)
-        for (i = 0; head->children[i] != NULL; ++i)
+    /* print head */
+    printf(ANSI_COLOR_BLUE "%s: %llu" ANSI_COLOR_RESET"\n",
+                            head->path, head->size);
+
+    /* print childrens */
+    for (i = 0; head->children[i] != NULL; ++i)
+        node_print(head->children[i]);
+
+    /* traverse dirs only */
+    for (i = 0; head->children[i] != NULL; ++i)
+        if (node_is_proper_dir(head->children[i]))
             traverse_tree(head->children[i]);
 }
