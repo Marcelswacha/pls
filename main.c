@@ -9,22 +9,9 @@
 #include "colors.h"
 #include "concat.h"
 
+#include "node.h"
+
 static int no_dot = 0;
-
-int is_dot(const char* path)
-{
-    int result = 0;
-    char* copy;
-    char* name;
-    copy = strdup(path);
-
-    name = basename(copy);
-    if (strcmp(name, ".") == 0 || strcmp(name, "..") == 0)
-        result = 1;
-
-    free (copy);
-    return result;
-}
 
 uint64_t get_size(const char* path)
 {
