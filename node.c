@@ -7,6 +7,7 @@
 #include "node.h"
 #include "concat.h"
 #include "colors.h"
+#include "options.h"
 
 struct node* node_create(const char* path, unsigned depth)
 {
@@ -109,7 +110,6 @@ void build_tree(struct node* head)
 void traverse_tree(struct node* head)
 {
     /* BFS traversal */
-    /* Traversing for dirs only */
     int i;
 
     /* print head */
@@ -118,10 +118,13 @@ void traverse_tree(struct node* head)
 
     /* print childrens */
     for (i = 0; head->children[i] != NULL; ++i)
-        node_print(head->children[i]);
+        if (is_dot(head->children[i]->path) == 0 || opt_show_dot)
+            node_print(head->children[i]);
+    printf("\n");
 
     /* traverse dirs only */
-    for (i = 0; head->children[i] != NULL; ++i)
-        if (node_is_proper_dir(head->children[i]))
-            traverse_tree(head->children[i]);
+    if (opt_recursive)
+        for (i = 0; head->children[i] != NULL; ++i)
+            if (node_is_proper_dir(head->children[i]))
+                traverse_tree(head->children[i]);
 }

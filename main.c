@@ -2,6 +2,7 @@
 #include <getopt.h>
 
 #include "node.h"
+#include "options.h"
 
 int listdir(const char* path)
 {
@@ -18,9 +19,12 @@ int listdir(const char* path)
     return 0;
 }
 
-static int no_dot = 0;
-static struct option long_options[] = { { "no-dot", 0, NULL, 'd' }, { NULL, 0,
+static struct option long_options[] = { { "show-dot", 0, NULL, 's' },
+        { "recursive", 0, NULL, 'r' },{ NULL, 0,
         NULL, 0 } };
+
+int opt_show_dot = 0;
+int opt_recursive = 0;
 
 int main(int argc, char** argv)
 {
@@ -28,10 +32,13 @@ int main(int argc, char** argv)
     int i;
 
     do {
-        next_option = getopt_long(argc, argv, "d", long_options, NULL);
+        next_option = getopt_long(argc, argv, "sr", long_options, NULL);
         switch (next_option) {
-        case 'd':
-            no_dot = 1;
+        case 's':
+            opt_show_dot = 1;
+            break;
+        case 'r':
+            opt_recursive = 1;
             break;
         case -1:
             break;
