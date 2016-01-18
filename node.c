@@ -32,20 +32,46 @@ void node_free(struct node* n)
     free(n);
 }
 
+char* format_bytes (uint64_t  bytes)
+{
+    char* result = malloc(128 * sizeof(char));
+    const char* suffix[5] = { "B", "KB", "MB", "GB", "TB" };
+
+    int i;
+    double dblSByte = bytes;
+    for (i = 0; i < 5 && bytes >= 1024; i++, bytes /= 1024)
+    {
+        dblSByte = bytes / 1024.0;
+    }
+
+    sprintf(result, "%10.2lf %s", dblSByte, suffix[i]);
+    return result;
+}
+
 void node_print(struct node* n)
 {
     char* copy;
+    char* size = format_bytes(n->size);
     copy = strdup(n->path);
+
     switch (n->type) {
     case DIRECTORY:
-        printf(ANSI_COLOR_CYAN "\t%-40s%llu" ANSI_COLOR_RESET"\n",
-        basename(copy), n->size);
+        printf(ANSI_COLOR_CYAN "\t%-60s%s" ANSI_COLOR_RESET"\n",
+        basename(copy), size);
         break;
     default:
-        printf("\t%-40s%llu\n", basename(copy), n->size);
+        printf("\t%-60s%s\n", basename(copy), size);
         break;
     }
     free(copy);
+    free(size);
+}
+
+void head_print(struct node* head)
+{
+    char* size = format_bytes(head->size);
+    printf(ANSI_COLOR_BLUE "%-67s %s" ANSI_COLOR_RESET"\n", head->path, size);
+    free(size);
 }
 
 int node_is_proper_dir(struct node* n)
@@ -113,8 +139,7 @@ void traverse_tree(struct node* head, int depth)
     int i;
 
     /* print head */
-    printf(ANSI_COLOR_BLUE "%s: %llu" ANSI_COLOR_RESET"\n", head->path,
-            head->size);
+    head_print(head);
 
     /* print childrens */
     for (i = 0; head->children[i] != NULL; ++i)
