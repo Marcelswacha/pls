@@ -44,7 +44,6 @@ void print_help()
 int main(int argc, char** argv)
 {
     int next_option;
-    int i;
 
     do {
         next_option = getopt_long(argc, argv, "srd:h", long_options, NULL);
@@ -70,9 +69,11 @@ int main(int argc, char** argv)
 
     if (optind == argc)
         listdir(".");
-    else
+    else {
+        int i;
         for (i = optind; i < argc; ++i)
             listdir(argv[i]);
+    }
 
     return 0;
 }

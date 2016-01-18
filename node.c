@@ -11,9 +11,7 @@
 
 struct node* node_create(const char* path, unsigned depth)
 {
-    struct node* n = NULL;
-
-    n = malloc(sizeof(struct node));
+    struct node* n = malloc(sizeof(struct node));
 
     if (n) {
         n->path = strdup(path);
@@ -24,21 +22,13 @@ struct node* node_create(const char* path, unsigned depth)
     return n;
 }
 
-void node_free(struct node* n)
-{
-    free(n->path);
-    if (n->children)
-        free(n->children);
-    free(n);
-}
-
 char* format_bytes (uint64_t  bytes)
 {
     char* result = malloc(128 * sizeof(char));
     const char* suffix[5] = { "B", "KB", "MB", "GB", "TB" };
 
-    int i;
     double dblSByte = bytes;
+    int i;
     for (i = 0; i < 5 && bytes >= 1024; i++, bytes /= 1024)
     {
         dblSByte = bytes / 1024.0;
@@ -50,9 +40,8 @@ char* format_bytes (uint64_t  bytes)
 
 void node_print(struct node* n)
 {
-    char* copy;
+    char* copy = strdup(n->path);
     char* size = format_bytes(n->size);
-    copy = strdup(n->path);
 
     switch (n->type) {
     case DIRECTORY:
@@ -82,8 +71,6 @@ int node_is_proper_dir(struct node* n)
 void build_tree(struct node* head)
 {
     struct stat buf;
-    struct dirent** namelist;
-    int n, i;
 
     /* get info of the node */
     lstat(head->path, &buf);
@@ -100,8 +87,10 @@ void build_tree(struct node* head)
 
     /* if it is the proper directory, build trees on its children */
     if (node_is_proper_dir(head)) {
+        struct dirent** namelist;
+
         /* scan directory */
-        n = scandir(head->path, &namelist, 0, alphasort);
+        int n = scandir(head->path, &namelist, 0, alphasort);
         if (n < 0)
             perror("scandir");
         else {
@@ -109,6 +98,7 @@ void build_tree(struct node* head)
             head->children = malloc((n + 1) * sizeof(struct node*));
             head->children[n] = NULL;
             if (head->children) {
+                int i;
                 for (i = 0; i < n; ++i) {
                     /* fill children names */
                     char * child_path = concat(head->path, "/",
@@ -152,15 +142,14 @@ void traverse_tree(struct node* head, int depth)
     head_print(head);
 
     /* sort children */
-    int i;
     int size = 0;
-    for (i = 0; head->children[i] != NULL; ++i)
+    for (int i = 0; head->children[i] != NULL; ++i)
         size += 1;
 
     qsort(head->children, size, sizeof(struct node*), mycmp);
 
     /* print childrens */
-    for (i = 0; head->children[i] != NULL; ++i)
+    for (int i = 0; head->children[i] != NULL; ++i)
         if (is_dot(head->children[i]->path) == 0 || opt_show_dot)
             node_print(head->children[i]);
     printf("\n");
@@ -168,7 +157,7 @@ void traverse_tree(struct node* head, int depth)
     /* traverse dirs only */
 
     if (opt_recursive && depth < opt_max_depth)
-        for (i = 0; head->children[i] != NULL; ++i)
+        for (int i = 0; head->children[i] != NULL; ++i)
             if (node_is_proper_dir(head->children[i]))
                 traverse_tree(head->children[i], depth+1);
 }
