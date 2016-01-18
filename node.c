@@ -133,13 +133,31 @@ void build_tree(struct node* head)
     head->size = size;
 }
 
+int mycmp(const void *s1, const void *s2)
+{
+    const struct node* l = *(const struct node **)s1;
+    const struct node *r = *(const struct node **)s2;
+
+    if (l->type == DIRECTORY && r->type != DIRECTORY) return -1;
+    else if (l->type != DIRECTORY && r->type == DIRECTORY) return 1;
+    else if (l->size > r->size) return -1;
+    else if (l->size < r->size) return 1;
+
+    return strcmp(l->path, r->path);
+}
+
 void traverse_tree(struct node* head, int depth)
 {
-    /* BFS traversal */
-    int i;
-
     /* print head */
     head_print(head);
+
+    /* sort children */
+    int i;
+    int size = 0;
+    for (i = 0; head->children[i] != NULL; ++i)
+        size += 1;
+
+    qsort(head->children, size, sizeof(struct node*), mycmp);
 
     /* print childrens */
     for (i = 0; head->children[i] != NULL; ++i)
