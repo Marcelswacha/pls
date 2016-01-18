@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <getopt.h>
 #include <limits.h>
@@ -31,6 +32,13 @@ int opt_max_depth = INT_MAX;
 
 void print_help()
 {
+    printf("Usage: pls [OPTION]... [FILE]...\n"
+           "   -h  --help          Display this message information\n"
+           "   -s  --show-dot      Show dot and dot-dot\n"
+           "   -r  --recursively   List directories recurse\n"
+           "   -d  --depth [DEPTH] Set recursion's depth\n");
+
+    exit(0);
 }
 
 int main(int argc, char** argv)
