@@ -107,7 +107,7 @@ void build_tree(struct node* head)
     head->size = size;
 }
 
-void traverse_tree(struct node* head)
+void traverse_tree(struct node* head, int depth)
 {
     /* BFS traversal */
     int i;
@@ -123,8 +123,9 @@ void traverse_tree(struct node* head)
     printf("\n");
 
     /* traverse dirs only */
-    if (opt_recursive)
+
+    if (opt_recursive && depth < opt_max_depth)
         for (i = 0; head->children[i] != NULL; ++i)
             if (node_is_proper_dir(head->children[i]))
-                traverse_tree(head->children[i]);
+                traverse_tree(head->children[i], depth+1);
 }

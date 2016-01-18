@@ -10,5 +10,5 @@
 
 extern int opt_show_dot;
 extern int opt_recursive;
-
+extern int opt_max_depth;
 #endif /* OPTIONS_H_ */
