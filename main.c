@@ -6,17 +6,24 @@
 #include "node.h"
 #include "options.h"
 
+char* buffer;
+
 int listdir(const char* path)
 {
+    buffer = (char*)malloc(1024*1024*1024*sizeof(char));
+    char * tmp_pointer = buffer;
+
     char resolved_path[1024];
     realpath(path, resolved_path);
 
     struct node* head = node_create(resolved_path, 0);
     build_tree(head);
     if (head->type == DIRECTORY) {
-        traverse_tree(head, 0);
+        traverse_tree(head, 0, &buffer);
     } else
-        node_print(head);
+        node_print(head, &buffer);
+
+    printf("%s", tmp_pointer);
 
     return 0;
 }

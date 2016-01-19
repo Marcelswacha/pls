@@ -39,28 +39,32 @@ char* format_bytes (uint64_t  bytes)
     return result;
 }
 
-void node_print(struct node* n)
+void node_print(struct node* n, char** buffer)
 {
     char* copy = strdup(n->path);
     char* size = format_bytes(n->size);
+    int l;
 
     switch (n->type) {
     case DIRECTORY:
-        printf(ANSI_COLOR_CYAN "\t%-60s%s" ANSI_COLOR_RESET"\n",
+        l = sprintf(*buffer, ANSI_COLOR_CYAN "\t%-60s%s" ANSI_COLOR_RESET"\n",
         basename(copy), size);
+        *buffer += l;
         break;
     default:
-        printf("\t%-60s%s\n", basename(copy), size);
+        l = sprintf(*buffer, "\t%-60s%s\n", basename(copy), size);
+        *buffer += l;
         break;
     }
     free(copy);
     free(size);
 }
 
-void head_print(struct node* head)
+void head_print(struct node* head, char** buffer)
 {
     char* size = format_bytes(head->size);
-    printf(ANSI_COLOR_BLUE "%-67s %s" ANSI_COLOR_RESET"\n", head->path, size);
+    int n = sprintf(*buffer, ANSI_COLOR_BLUE "%-67s %s" ANSI_COLOR_RESET"\n", head->path, size);
+    *buffer += n;
     free(size);
 }
 
@@ -137,10 +141,10 @@ int mycmp(const void *s1, const void *s2)
     return strcmp(l->path, r->path);
 }
 
-void traverse_tree(struct node* head, int depth)
+void traverse_tree(struct node* head, int depth, char** buffer)
 {
     /* print head */
-    head_print(head);
+    head_print(head, buffer);
 
     /* sort children */
     int size = 0;
@@ -152,13 +156,14 @@ void traverse_tree(struct node* head, int depth)
     /* print childrens */
     for (int i = 0; head->children[i] != NULL; ++i)
         if (is_dot(head->children[i]->path) == 0 || opt_show_dot)
-            node_print(head->children[i]);
-    printf("\n");
+            node_print(head->children[i], buffer);
+    int n = sprintf(*buffer, "\n");
+    *buffer += n;
 
     /* traverse dirs only */
 
     if (opt_recursive && depth < opt_max_depth)
         for (int i = 0; head->children[i] != NULL; ++i)
             if (node_is_proper_dir(head->children[i]))
-                traverse_tree(head->children[i], depth+1);
+                traverse_tree(head->children[i], depth+1, buffer);
 }
