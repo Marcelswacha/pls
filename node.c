@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <stdio.h>
 #include <dirent.h>
 #include <stdlib.h>
@@ -92,7 +93,7 @@ void build_tree(struct node* head)
         /* scan directory */
         int n = scandir(head->path, &namelist, 0, alphasort);
         if (n < 0)
-            perror("scandir");
+            printf("%s: %s\n", head->path, strerror(errno));
         else {
             /*build children nodes*/
             head->children = malloc((n + 1) * sizeof(struct node*));
