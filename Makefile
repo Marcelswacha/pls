@@ -1,6 +1,6 @@
 CFLAGS = -g -Wall
 
-SRC = main.c node.c concat.c
+SRC = main.c stack.c node.c concat.c
 
 OBJ = $(SRC:.c=.o)
 

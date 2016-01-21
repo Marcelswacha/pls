@@ -9,6 +9,7 @@
 #include "concat.h"
 #include "colors.h"
 #include "options.h"
+#include "stack.h"
 
 struct node* node_create(const char* path, unsigned depth)
 {
@@ -73,24 +74,71 @@ int node_is_proper_dir(struct node* n)
     return (n->type == DIRECTORY && is_dot(n->path) == 0) ? 1 : 0;
 }
 
-void build_tree(struct node* head)
+static void get_node_info(struct node* n)
 {
     struct stat buf;
 
-    /* get info of the node */
-    lstat(head->path, &buf);
+        /* get info of the node */
+        lstat(n->path, &buf);
 
-    uint64_t size = buf.st_size;
-    if (S_ISDIR(buf.st_mode))
-        head->type = DIRECTORY;
-    else if (S_ISREG(buf.st_mode))
-        head->type = REGULAR_FILE;
-    else if (S_ISLNK(buf.st_mode))
-        head->type = SYMLINK;
-    else
-        head->type = SOMETHING_ELSE;
+        n->size= buf.st_size;
+        if (S_ISDIR(buf.st_mode))
+            n->type = DIRECTORY;
+        else if (S_ISREG(buf.st_mode))
+            n->type = REGULAR_FILE;
+        else if (S_ISLNK(buf.st_mode))
+            n->type = SYMLINK;
+        else
+            n->type = SOMETHING_ELSE;
+}
 
-    /* if it is the proper directory, build trees on its children */
+static void do_preprocessing(struct node* n);
+static void do_postprocessing(struct node* n);
+
+void build_tree(struct node* head)
+{
+    struct stack* stack_pre = stack_create_default();
+    struct stack* stack_post = stack_create_default();
+
+    stack_push(stack_pre, head);
+
+    struct node* current;
+    while(stack_not_empty(stack_pre) == 1) {
+        current = stack_top(stack_pre);
+        stack_pop(stack_pre);
+
+        /* do preprocessing */
+        do_preprocessing(current);
+
+        /* push it on post */
+        stack_push(stack_post, current);
+
+        /* push current's children to pre */
+        if (current->children)
+            for (int i = 0; current->children[i] != NULL; ++i)
+                stack_push(stack_pre, current->children[i]);
+    }
+
+    /* Release pre stack */
+    stack_destroy(stack_pre);
+
+    while(stack_not_empty(stack_post) == 1) {
+        struct node* current = stack_top(stack_post);
+        stack_pop(stack_post);
+
+        /* do post processing */
+        do_postprocessing(current);
+    }
+
+    /* Release post_stack */
+    stack_destroy(stack_post);
+}
+
+static void do_preprocessing(struct node* head)
+{
+    /* inspect element */
+    get_node_info(head);
+
     if (node_is_proper_dir(head)) {
         struct dirent** namelist;
 
@@ -112,10 +160,6 @@ void build_tree(struct node* head)
                     head->children[i] = node_create(child_path,
                             head->depth + 1);
 
-                    /* span tree recursively  - DFS*/
-                    build_tree(head->children[i]);
-                    size += head->children[i]->size;
-
                     /* clean up */
                     free(child_path);
                     free(namelist[i]);
@@ -124,8 +168,13 @@ void build_tree(struct node* head)
             free(namelist);
         }
     }
+}
 
-    head->size = size;
+static void do_postprocessing(struct node* head)
+{
+    if (head->children)
+        for (int i = 0; head->children[i] != NULL; ++i)
+            head->size += head->children[i]->size;
 }
 
 int mycmp(const void *s1, const void *s2)
