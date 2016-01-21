@@ -143,7 +143,7 @@ static void do_preprocessing(struct node* head)
         struct dirent** namelist;
 
         /* scan directory */
-        int n = scandir(head->path, &namelist, 0, alphasort);
+        int n = scandir(head->path, &namelist, 0, NULL);
         if (n < 0)
             printf("%s: %s\n", head->path, strerror(errno));
         else {
