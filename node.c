@@ -67,7 +67,7 @@ void node_print(struct node* n, char** buffer)
     int l;
 
     switch (n->type) {
-    case DIRECTORY:
+    case REGULAR_DIRECTORY:
         l = sprintf(*buffer, ANSI_COLOR_CYAN "\t%-60s%s" ANSI_COLOR_RESET"\n",
         basename(copy), size);
         *buffer += l;
@@ -91,25 +91,25 @@ void head_print(struct node* head, char** buffer)
 
 int node_is_proper_dir(struct node* n)
 {
-    return (n->type == DIRECTORY && is_dot(n->path) == 0) ? 1 : 0;
+    return (n->type == REGULAR_DIRECTORY && is_dot(n->path) == 0) ? 1 : 0;
 }
 
 static void get_node_info(struct node* n)
 {
     struct stat buf;
 
-        /* get info of the node */
-        lstat(n->path, &buf);
+    /* get info of the node */
+    lstat(n->path, &buf);
 
-        n->size= buf.st_size;
-        if (S_ISDIR(buf.st_mode))
-            n->type = DIRECTORY;
-        else if (S_ISREG(buf.st_mode))
-            n->type = REGULAR_FILE;
-        else if (S_ISLNK(buf.st_mode))
-            n->type = SYMLINK;
-        else
-            n->type = SOMETHING_ELSE;
+    n->size= buf.st_size;
+    if (S_ISDIR(buf.st_mode))
+        n->type = REGULAR_DIRECTORY;
+    else if (S_ISREG(buf.st_mode))
+        n->type = REGULAR_FILE;
+    else if (S_ISLNK(buf.st_mode))
+        n->type = SYMLINK;
+    else
+        n->type = SOMETHING_ELSE;
 }
 
 static void do_preprocessing(struct node* n);
@@ -120,7 +120,9 @@ void build_tree(struct node* head)
     struct stack* stack_pre = stack_create_default();
     struct stack* stack_post = stack_create_default();
 
-    stack_push(stack_pre, head);
+    get_node_info(head);
+    if (head->type == REGULAR_DIRECTORY)
+        stack_push(stack_pre, head);
 
     struct node* current;
     while(stack_not_empty(stack_pre) == 1) {
@@ -133,10 +135,11 @@ void build_tree(struct node* head)
         /* push it on post */
         stack_push(stack_post, current);
 
-        /* push current's children to pre */
+        /* push current's dir-children to pre */
         if (current->children)
             for (int i = 0; current->children[i] != NULL; ++i)
-                stack_push(stack_pre, current->children[i]);
+                if (current->children[i]->type == REGULAR_DIRECTORY)
+                    stack_push(stack_pre, current->children[i]);
     }
 
     /* Release pre stack */
@@ -156,34 +159,33 @@ void build_tree(struct node* head)
 
 static void do_preprocessing(struct node* head)
 {
-    /* inspect element */
-    get_node_info(head);
+    struct dirent** namelist;
 
-    if (node_is_proper_dir(head)) {
-        struct dirent** namelist;
+    /* scan directory */
+    int n = scandir(head->path, &namelist, 0, NULL);
+    if (n < 0)
+        printf("%s: %s\n", head->path, strerror(errno));
+    else {
+        /*build children nodes*/
+        head->children = malloc((n + 1) * sizeof(struct node*));
+        head->children[n] = NULL;
+        if (head->children) {
+            for (int i = 0; i < n; ++i) {
+                /* fill children names */
+                char * child_path = concat(head->path,namelist[i]->d_name);
+                head->children[i] = node_get(child_path,
+                        head->depth + 1);
 
-        /* scan directory */
-        int n = scandir(head->path, &namelist, 0, NULL);
-        if (n < 0)
-            printf("%s: %s\n", head->path, strerror(errno));
-        else {
-            /*build children nodes*/
-            head->children = malloc((n + 1) * sizeof(struct node*));
-            head->children[n] = NULL;
-            if (head->children) {
-                int i;
-                for (i = 0; i < n; ++i) {
-                    /* fill children names */
-                    char * child_path = concat(head->path,namelist[i]->d_name);
-                    head->children[i] = node_get(child_path,
-                            head->depth + 1);
+                /* inspect element */
+                get_node_info(head->children[i]);
+                if (is_dot(namelist[i]->d_name))
+                    head->children[i]->type = DOT_DIRECTORY;
 
-                    /* clean up */
-                    free(namelist[i]);
-                }
+                /* clean up */
+                free(namelist[i]);
             }
-            free(namelist);
         }
+        free(namelist);
     }
 }
 
@@ -199,8 +201,8 @@ int mycmp(const void *s1, const void *s2)
     const struct node* l = *(const struct node **)s1;
     const struct node *r = *(const struct node **)s2;
 
-    if (l->type == DIRECTORY && r->type != DIRECTORY) return -1;
-    else if (l->type != DIRECTORY && r->type == DIRECTORY) return 1;
+    if (l->type == REGULAR_DIRECTORY && r->type != REGULAR_DIRECTORY) return -1;
+    else if (l->type != REGULAR_DIRECTORY && r->type == REGULAR_DIRECTORY) return 1;
     else if (l->size > r->size) return -1;
     else if (l->size < r->size) return 1;
 
@@ -221,7 +223,7 @@ void traverse_tree(struct node* head, int depth, char** buffer)
 
     /* print childrens */
     for (int i = 0; head->children[i] != NULL; ++i)
-        if (is_dot(head->children[i]->path) == 0 || opt_show_dot)
+        if (is_dot_full(head->children[i]->path) == 0 || opt_show_dot)
             node_print(head->children[i], buffer);
     int n = sprintf(*buffer, "\n");
     *buffer += n;

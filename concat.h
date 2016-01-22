@@ -7,6 +7,7 @@
 #include <string.h>
 
 char* concat(const char *first, const char* second);
-int is_dot(const char* path);
+int is_dot(const char* name);
+int is_dot_full(const char* path);
 
 #endif /* CONCAT_H_ */

@@ -31,16 +31,20 @@ char* concat(const char *first, const char* second)
     return s;
 }
 
-int is_dot(const char* path)
+int is_dot(const char* name)
 {
     int result = 0;
-    char* copy;
-    char* name;
-    copy = strdup(path);
-
-    name = basename(copy);
     if (strcmp(name, ".") == 0 || strcmp(name, "..") == 0)
         result = 1;
+
+    return result;
+}
+
+int is_dot_full(const char* path)
+{
+    int result = 0;
+    char* copy = strdup(path);
+    result = is_dot(basename(copy));
 
     free(copy);
     return result;

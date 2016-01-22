@@ -18,7 +18,7 @@ int listdir(const char* path)
 
     struct node* head = node_create(resolved_path, 0);
     build_tree(head);
-    if (head->type == DIRECTORY) {
+    if (head->type == REGULAR_DIRECTORY) {
         traverse_tree(head, 0, &tmp_pointer);
     } else
         node_print(head, &tmp_pointer);
