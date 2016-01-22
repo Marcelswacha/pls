@@ -17,7 +17,7 @@ struct node
     unsigned depth;
 };
 
-struct node* node_create(const char* path, unsigned depth);
+struct node* node_create(char* path, unsigned depth);
 void node_print(struct node* n, char** buffer);
 int node_is_proper_dir(struct node* n);
 void build_tree(struct node* head);

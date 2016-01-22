@@ -11,12 +11,14 @@
 #include "options.h"
 #include "stack.h"
 
-struct node* node_create(const char* path, unsigned depth)
+static const int DEFAULT_TREE_SIZE = 1024*1024*16;
+
+struct node* node_create(char* path, unsigned depth)
 {
     struct node* n = malloc(sizeof(struct node));
 
     if (n) {
-        n->path = strdup(path);
+        n->path = path;
         n->children = NULL;
         n->depth = depth;
     }
@@ -161,7 +163,6 @@ static void do_preprocessing(struct node* head)
                             head->depth + 1);
 
                     /* clean up */
-                    free(child_path);
                     free(namelist[i]);
                 }
             }
