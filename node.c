@@ -11,7 +11,9 @@
 #include "options.h"
 #include "stack.h"
 
-static const int DEFAULT_TREE_SIZE = 1024*1024*16;
+#define DEFAULT_ARRAY_SIZE 1024*1024*16
+
+static struct node NODE_ARRAY[DEFAULT_ARRAY_SIZE];
 
 struct node* node_create(char* path, unsigned depth)
 {
@@ -22,6 +24,22 @@ struct node* node_create(char* path, unsigned depth)
         n->children = NULL;
         n->depth = depth;
     }
+
+    return n;
+}
+
+struct node* node_get(char* path, unsigned depth)
+{
+    static int array_ptr = 0;
+
+    if (array_ptr + 1 == DEFAULT_ARRAY_SIZE)
+        return node_create(path, depth);
+
+    struct node* n = NODE_ARRAY + array_ptr;
+    n->path = path;
+    n->children = NULL;
+    n->depth = depth;
+    array_ptr++;
 
     return n;
 }
@@ -159,7 +177,7 @@ static void do_preprocessing(struct node* head)
                     char * child_path = concat(head->path, "/",
                             namelist[i]->d_name,
                             NULL);
-                    head->children[i] = node_create(child_path,
+                    head->children[i] = node_get(child_path,
                             head->depth + 1);
 
                     /* clean up */
