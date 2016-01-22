@@ -2,34 +2,16 @@
 
 #include "concat.h"
 
-char* concat(const char *str, ...)
+char* concat(const char *first, const char* second)
 {
-    va_list ap, ap2;
-    size_t total = 1;
-    const char *s;
-    char *result;
+    size_t len1 = strlen(first);
+    size_t len2 = strlen(second);
 
-    va_start(ap, str);
-    va_copy(ap2, ap);
-
-    /* Determine how much space we need.  */
-    for (s = str; s != NULL; s = va_arg(ap, const char *))
-        total += strlen(s);
-
-    va_end(ap);
-
-    result = (char *) malloc(total);
-    if (result != NULL) {
-        result[0] = '\0';
-
-        /* Copy the strings.  */
-        for (s = str; s != NULL; s = va_arg(ap2, const char *))
-            strcat(result, s);
-    }
-
-    va_end(ap2);
-
-    return result;
+    char * s = malloc(len1 + len2 + 2);
+    memcpy(s, first, len1);
+    s[len1] = '/';
+    memcpy(s + len1 + 1, second, len2 + 1); // includes terminating null
+    return s;
 }
 
 int is_dot(const char* path)

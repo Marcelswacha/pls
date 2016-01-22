@@ -174,9 +174,7 @@ static void do_preprocessing(struct node* head)
                 int i;
                 for (i = 0; i < n; ++i) {
                     /* fill children names */
-                    char * child_path = concat(head->path, "/",
-                            namelist[i]->d_name,
-                            NULL);
+                    char * child_path = concat(head->path,namelist[i]->d_name);
                     head->children[i] = node_get(child_path,
                             head->depth + 1);
 
