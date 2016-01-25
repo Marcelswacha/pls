@@ -16,11 +16,15 @@ int TOTAL_TIME = 0;
 int listdir(const char* path)
 {
     START
+
+    char* resolved_path = realpath(path, NULL);
+
+    if (!resolved_path) {
+        printf("Error while resolving input path\n");
+        return -1;
+    }
+
     char * tmp_pointer = buffer;
-
-    char resolved_path[1024];
-    realpath(path, resolved_path);
-
     struct node* head = node_create(resolved_path, 0);
     build_tree(head);
     if (head->type == REGULAR_DIRECTORY) {
@@ -28,11 +32,14 @@ int listdir(const char* path)
     } else
         node_print(head, &tmp_pointer);
 
+
     printf("%s", buffer);
     STOP(TOTAL_TIME);
 
     printf("\nScandir time: %f\n", SCANDIR_TIME / 1000000.0);
     printf("Total time: %f\n\n", TOTAL_TIME / 1000000.0);
+
+    free(resolved_path);
 
     return 0;
 }

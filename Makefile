@@ -1,4 +1,4 @@
-CFLAGS = -pg -Wall -O0
+CFLAGS = -pg -Wall -O2
 
 SRC = main.c stack.c node.c concat.c profile.c
 
