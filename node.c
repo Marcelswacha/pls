@@ -11,7 +11,10 @@
 #include "options.h"
 #include "stack.h"
 
+#include "profile.h"
+
 #define DEFAULT_ARRAY_SIZE 1024*1024*16
+
 
 static struct node NODE_ARRAY[DEFAULT_ARRAY_SIZE];
 
@@ -162,7 +165,9 @@ static void do_preprocessing(struct node* head)
     struct dirent** namelist;
 
     /* scan directory */
+    START
     int n = scandir(head->path, &namelist, 0, NULL);
+    STOP(SCANDIR_TIME)
     if (n < 0)
         printf("%s: %s\n", head->path, strerror(errno));
     else {
