@@ -2,7 +2,7 @@
 #define NODE_H
 
 #include <stdint.h>
-extern int SCANDIR_TIME;
+
 enum file_type
 {
     REGULAR_DIRECTORY, REGULAR_FILE, SYMLINK, SOMETHING_ELSE, DOT_DIRECTORY

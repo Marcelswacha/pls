@@ -11,10 +11,7 @@
 #include "options.h"
 #include "stack.h"
 
-#include "profile.h"
-
 #define DEFAULT_ARRAY_SIZE 1024*1024*16
-
 
 static struct node NODE_ARRAY[DEFAULT_ARRAY_SIZE];
 
@@ -52,14 +49,14 @@ char* format_bytes (uint64_t  bytes)
     char* result = malloc(128 * sizeof(char));
     const char* suffix[5] = { "B", "KB", "MB", "GB", "TB" };
 
-    double dblSByte = bytes;
+    double dbl_byte = bytes;
     int i;
     for (i = 0; i < 5 && bytes >= 1024; i++, bytes /= 1024)
     {
-        dblSByte = bytes / 1024.0;
+        dbl_byte = bytes / 1024.0;
     }
 
-    sprintf(result, "%10.2lf %s", dblSByte, suffix[i]);
+    sprintf(result, "%10.2lf %s", dbl_byte, suffix[i]);
     return result;
 }
 
@@ -80,6 +77,7 @@ void node_print(struct node* n, char** buffer)
         *buffer += l;
         break;
     }
+
     free(copy);
     free(size);
 }
@@ -87,7 +85,8 @@ void node_print(struct node* n, char** buffer)
 void head_print(struct node* head, char** buffer)
 {
     char* size = format_bytes(head->size);
-    int n = sprintf(*buffer, ANSI_COLOR_BLUE "%-67s %s" ANSI_COLOR_RESET"\n", head->path, size);
+    int n = sprintf(*buffer, ANSI_COLOR_BLUE "%-67s %s" ANSI_COLOR_RESET"\n",
+                head->path, size);
     *buffer += n;
     free(size);
 }
@@ -132,7 +131,7 @@ void build_tree(struct node* head)
         current = stack_top(stack_pre);
         stack_pop(stack_pre);
 
-        /* do preprocessing */
+        /* do pre-processing */
         do_preprocessing(current);
 
         /* push it on post */
@@ -152,7 +151,7 @@ void build_tree(struct node* head)
         struct node* current = stack_top(stack_post);
         stack_pop(stack_post);
 
-        /* do post processing */
+        /* do post-processing */
         do_postprocessing(current);
     }
 
@@ -165,9 +164,7 @@ static void do_preprocessing(struct node* head)
     struct dirent** namelist;
 
     /* scan directory */
-    START
     int n = scandir(head->path, &namelist, 0, NULL);
-    STOP(SCANDIR_TIME)
     if (n < 0)
         printf("%s: %s\n", head->path, strerror(errno));
     else {
@@ -219,11 +216,12 @@ void traverse_tree(struct node* head, int depth, char** buffer)
     /* print head */
     head_print(head, buffer);
 
-    /* sort children */
+    /* count children */
     int size = 0;
     for (int i = 0; head->children[i] != NULL; ++i)
         size += 1;
 
+    /* sort children */
     qsort(head->children, size, sizeof(struct node*), mycmp);
 
     /* print childrens */
@@ -234,7 +232,6 @@ void traverse_tree(struct node* head, int depth, char** buffer)
     *buffer += n;
 
     /* traverse dirs only */
-
     if (opt_recursive && depth < opt_max_depth)
         for (int i = 0; head->children[i] != NULL; ++i)
             if (node_is_proper_dir(head->children[i]))

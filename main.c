@@ -5,18 +5,12 @@
 
 #include "node.h"
 #include "options.h"
-#include "profile.h"
 
 #define BUFFER_SIZE 1024*1024*128
 char buffer[BUFFER_SIZE];
 
-int SCANDIR_TIME = 0;
-int TOTAL_TIME = 0;
-
 int listdir(const char* path)
 {
-    START
-
     char* resolved_path = realpath(path, NULL);
 
     if (!resolved_path) {
@@ -32,13 +26,7 @@ int listdir(const char* path)
     } else
         node_print(head, &tmp_pointer);
 
-
     printf("%s", buffer);
-    STOP(TOTAL_TIME);
-
-    printf("\nScandir time: %f\n", SCANDIR_TIME / 1000000.0);
-    printf("Total time: %f\n\n", TOTAL_TIME / 1000000.0);
-
     free(resolved_path);
 
     return 0;
