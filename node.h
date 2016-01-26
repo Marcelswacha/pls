@@ -1,6 +1,8 @@
 #ifndef NODE_H
 #define NODE_H
 
+extern unsigned long PROCESSED_ELEMENTS;
+
 #include <stdint.h>
 
 enum file_type
@@ -25,5 +27,7 @@ void build_tree(struct node* head);
 void traverse_tree(struct node* head, int depth, char** buffer
         );
 void free_tree(struct node* head);
+
+void update_progress(unsigned int inc);
 
 #endif /* CONCAT_H_ */

@@ -32,6 +32,7 @@ struct node* node_get(char* path, unsigned depth)
 {
     static int array_ptr = 0;
 
+    /* FIXME hard to free memory later */
     if (array_ptr + 1 == DEFAULT_ARRAY_SIZE)
         return node_create(path, depth);
 
@@ -186,6 +187,7 @@ static void do_preprocessing(struct node* head)
                 /* clean up */
                 free(namelist[i]);
             }
+            update_progress(n);
         }
         free(namelist);
     }
@@ -200,8 +202,8 @@ static void do_postprocessing(struct node* head)
 
 int mycmp(const void *s1, const void *s2)
 {
-    const struct node* l = *(const struct node **)s1;
-    const struct node *r = *(const struct node **)s2;
+    const struct node* l = *(const struct node** )s1;
+    const struct node* r = *(const struct node** )s2;
 
     if (l->type == REGULAR_DIRECTORY && r->type != REGULAR_DIRECTORY) return -1;
     else if (l->type != REGULAR_DIRECTORY && r->type == REGULAR_DIRECTORY) return 1;
@@ -236,4 +238,10 @@ void traverse_tree(struct node* head, int depth, char** buffer)
         for (int i = 0; head->children[i] != NULL; ++i)
             if (node_is_proper_dir(head->children[i]))
                 traverse_tree(head->children[i], depth+1, buffer);
+}
+
+void update_progress(unsigned int inc)
+{
+    PROCESSED_ELEMENTS += inc;
+    printf("Processed elements: %lu\r", PROCESSED_ELEMENTS);
 }

@@ -31,6 +31,7 @@ struct stack* stack_create_default()
 void stack_destroy(struct stack* s)
 {
     free(s->data);
+    free(s);
 }
 
 void stack_push(struct stack* s, struct node* n)

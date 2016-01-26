@@ -9,8 +9,11 @@
 #define BUFFER_SIZE 1024*1024*128
 char buffer[BUFFER_SIZE];
 
+unsigned long PROCESSED_ELEMENTS = 0;
+
 int listdir(const char* path)
 {
+    PROCESSED_ELEMENTS = 0;
     char* resolved_path = realpath(path, NULL);
 
     if (!resolved_path) {
@@ -19,7 +22,8 @@ int listdir(const char* path)
     }
 
     char * tmp_pointer = buffer;
-    struct node* head = node_create(resolved_path, 0);
+    struct node* head = node_get(resolved_path, 0);
+    update_progress(1);
     build_tree(head);
     if (head->type == REGULAR_DIRECTORY) {
         traverse_tree(head, 0, &tmp_pointer);
