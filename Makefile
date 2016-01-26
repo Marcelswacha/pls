@@ -1,6 +1,6 @@
-CFLAGS = -pg -Wall -O2
+CFLAGS = -pg -Wall -O3 -std=gnu99
 
-SRC = main.c stack.c node.c concat.c profile.c
+SRC = main.c stack.c node.c concat.c
 
 OBJ = $(SRC:.c=.o)
 
