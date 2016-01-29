@@ -1,8 +1,10 @@
 #include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <dirent.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <sys/stat.h>
 
 #include "node.h"
@@ -101,11 +103,14 @@ static void get_node_info(struct node* n)
 {
     struct stat buf;
 
-    /* get info of the node */
     lstat(n->path, &buf);
-
     n->size= buf.st_size;
-    if (S_ISDIR(buf.st_mode))
+
+    if (access(n->path, R_OK) != 0) {
+        n->type = SOMETHING_ELSE;
+        n->size = 0;
+    }
+    else if (S_ISDIR(buf.st_mode))
         n->type = REGULAR_DIRECTORY;
     else if (S_ISREG(buf.st_mode))
         n->type = REGULAR_FILE;
