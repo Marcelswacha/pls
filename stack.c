@@ -38,8 +38,9 @@ void stack_push(struct stack* s, struct node* n)
 {
     if (s->stack_ptr + 1 == s->data_size) {
         /* need to allocate more memory */
-        int new_size = s->data_size * 2;
-        struct node** new_data = (struct node**)realloc(s->data, new_size);
+        int new_size = s->data_size + DEFAULT_STACK_SIZE;
+        struct node** new_data = (struct node**)realloc(s->data,
+                                      new_size*sizeof(struct node*));
         printf("Reallocated %d\n", new_size);
 
         if (new_data) {
